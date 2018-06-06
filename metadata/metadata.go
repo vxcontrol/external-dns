@@ -157,8 +157,28 @@ func (m *MetadataClient) getContainersDnsRecords(dnsEntries map[string]utils.Met
 			fqdn := utils.FqdnFromTemplate(nameTemplate, container.ServiceName, container.StackName,
 				m.EnvironmentName, config.RootDomainName)
 
-			addToDnsEntries(fqdn, externalIP, container.ServiceName, container.StackName, dnsEntries)
+			addToDnsEntries(fqdn, externalIP, container.ServiceName, container.StackName, dnsEntries, "A")
 			ourFqdns[fqdn] = struct{}{}
+
+			//Proper place to add CNAMEs for load balancer services to route requested hostnames
+			//to the actual service
+			if service.Kind == "loadBalancerService" {
+				parentFQDN := fqdn
+				for _, portRule := range service.LBConfig.PortRules {
+					for _, container := range service.Containers {
+						fqdn = portRule.Hostname
+						if fqdn != "" {
+							if fqdn[len(fqdn)-1:] != "." {
+								fqdn = fqdn + "."
+							}
+							if _, ok := ourFqdns[fqdn]; !ok {
+								addToDnsEntries(fqdn, parentFQDN, container.ServiceName, container.StackName, dnsEntries, "CNAME")
+								ourFqdns[fqdn] = struct{}{}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -187,7 +207,7 @@ func (m *MetadataClient) updateEnvironmentName() error {
 	return nil
 }
 
-func addToDnsEntries(fqdn, ip, service, stack string, dnsEntries map[string]utils.MetadataDnsRecord) {
+func addToDnsEntries(fqdn, ip, service, stack string, dnsEntries map[string]utils.MetadataDnsRecord, entryType string) {
 	var records []string
 	if _, ok := dnsEntries[fqdn]; !ok {
 		records = []string{ip}
@@ -205,7 +225,7 @@ func addToDnsEntries(fqdn, ip, service, stack string, dnsEntries map[string]util
 	dnsEntries[fqdn] = utils.MetadataDnsRecord{
 		ServiceName: service,
 		StackName:   stack,
-		DnsRecord:   utils.DnsRecord{fqdn, records, "A", config.TTL},
+		DnsRecord:   utils.DnsRecord{fqdn, records, entryType, config.TTL},
 	}
 }
 
