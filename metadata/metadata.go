@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/rancher/external-dns/config"
-	"github.com/rancher/external-dns/utils"
+	"github.com/vxcontrol/external-dns/config"
+	"github.com/vxcontrol/external-dns/utils"
 	"github.com/rancher/go-rancher-metadata/metadata"
 )
 

@@ -10,8 +10,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	api "github.com/fanatic/go-infoblox"
-	"github.com/rancher/external-dns/providers"
-	"github.com/rancher/external-dns/utils"
+	"github.com/vxcontrol/external-dns/providers"
+	"github.com/vxcontrol/external-dns/utils"
 )
 
 const (

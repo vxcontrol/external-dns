@@ -9,8 +9,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dnsimple/dnsimple-go/dnsimple"
 	"github.com/juju/ratelimit"
-	"github.com/rancher/external-dns/providers"
-	"github.com/rancher/external-dns/utils"
+	"github.com/vxcontrol/external-dns/providers"
+	"github.com/vxcontrol/external-dns/utils"
 )
 
 type DNSimpleProvider struct {

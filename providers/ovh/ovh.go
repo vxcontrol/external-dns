@@ -8,8 +8,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	api "github.com/ovh/go-ovh/ovh"
-	"github.com/rancher/external-dns/providers"
-	"github.com/rancher/external-dns/utils"
+	"github.com/vxcontrol/external-dns/providers"
+	"github.com/vxcontrol/external-dns/utils"
 )
 
 type Record struct {
