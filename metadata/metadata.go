@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 	"time"
+	"regexp"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/vxcontrol/external-dns/config"
@@ -168,8 +169,10 @@ func (m *MetadataClient) getContainersDnsRecords(dnsEntries map[string]utils.Met
 					for _, container := range service.Containers {
 						fqdn = portRule.Hostname
 						if fqdn != "" {
-							if fqdn[len(fqdn)-1:] != "." {
-								fqdn = fqdn + "."
+							fqdn = utils.Fqdn(fqdn)
+							matched, err := regexp.MatchString("^.*" + config.RootDomainName + "$", fqdn)
+							if config.RootDomainName == "" || err != nil || matched == false {
+								continue
 							}
 							if _, ok := ourFqdns[fqdn]; !ok {
 								addToDnsEntries(fqdn, parentFQDN, container.ServiceName, container.StackName, dnsEntries, "CNAME")

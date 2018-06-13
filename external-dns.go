@@ -157,9 +157,9 @@ func getProviderDnsRecords() (map[string]utils.DnsRecord, map[string]utils.DnsRe
 		}
 	}
 
-	logrus.Debugf("ourFqdns: %v", ourFqdns)
 	for _, rec := range providerRecords {
 		if rec.Type == "A" {
+			rec.Fqdn = utils.Fqdn(rec.Fqdn)
 			logrus.Debugf("A record: %v", rec)
 			allRecords[rec.Fqdn] = rec
 			if _, ok := ourFqdns[rec.Fqdn]; ok {
@@ -170,6 +170,10 @@ func getProviderDnsRecords() (map[string]utils.DnsRecord, map[string]utils.DnsRe
 
 	for _, rec := range providerRecords {
 		if rec.Type == "CNAME" {
+			for id, fqdn := range rec.Records {
+				rec.Records[id] = utils.Fqdn(fqdn)
+			}
+			rec.Fqdn = utils.Fqdn(rec.Fqdn)
 			logrus.Debugf("CNAME record: %v", rec)
 			allRecords[rec.Fqdn] = rec
 			if _, ok := ourFqdns[rec.Fqdn]; ok {
