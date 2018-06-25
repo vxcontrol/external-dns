@@ -155,11 +155,19 @@ func (m *MetadataClient) getContainersDnsRecords(dnsEntries map[string]utils.Met
 				nameTemplate = config.NameTemplate
 			}
 
-			fqdn := utils.FqdnFromTemplate(nameTemplate, container.ServiceName, container.StackName,
-				m.EnvironmentName, config.RootDomainName)
+			fqdn, ok := service.Labels["io.rancher.service.external_dns_fqdn"]
+			if !ok {
+				fqdn = utils.FqdnFromTemplate(nameTemplate, container.ServiceName, container.StackName,
+					m.EnvironmentName, config.RootDomainName)
+			} else {
+				fqdn = utils.Fqdn(fqdn)
+			}
 
-			addToDnsEntries(fqdn, externalIP, container.ServiceName, container.StackName, dnsEntries, "A")
-			ourFqdns[fqdn] = struct{}{}
+			matched, err := regexp.MatchString("^.*" + config.RootDomainName + "$", fqdn)
+			if config.RootDomainName == "" || (err == nil && matched == true) {
+				addToDnsEntries(fqdn, externalIP, container.ServiceName, container.StackName, dnsEntries, "A")
+				ourFqdns[fqdn] = struct{}{}
+			}
 
 			//Proper place to add CNAMEs for load balancer services to route requested hostnames
 			//to the actual service
@@ -170,7 +178,7 @@ func (m *MetadataClient) getContainersDnsRecords(dnsEntries map[string]utils.Met
 						fqdn = portRule.Hostname
 						if fqdn != "" {
 							fqdn = utils.Fqdn(fqdn)
-							matched, err := regexp.MatchString("^.*" + config.RootDomainName + "$", fqdn)
+							matched, err = regexp.MatchString("^.*" + config.RootDomainName + "$", fqdn)
 							if config.RootDomainName == "" || err != nil || matched == false {
 								continue
 							}
