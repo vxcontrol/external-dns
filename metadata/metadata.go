@@ -183,7 +183,11 @@ func (m *MetadataClient) getContainersDnsRecords(dnsEntries map[string]utils.Met
 								continue
 							}
 							if _, ok := ourFqdns[fqdn]; !ok {
-								addToDnsEntries(fqdn, parentFQDN, container.ServiceName, container.StackName, dnsEntries, "CNAME")
+								if fqdn == config.RootDomainName {
+									addToDnsEntries(fqdn, externalIP, container.ServiceName, container.StackName, dnsEntries, "A")
+								} else {
+									addToDnsEntries(fqdn, parentFQDN, container.ServiceName, container.StackName, dnsEntries, "CNAME")
+								}
 								ourFqdns[fqdn] = struct{}{}
 							}
 						}
